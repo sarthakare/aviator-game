@@ -1,0 +1,82 @@
+import { useEffect, useRef, useState } from "react";
+import WebGLStarter from "./AviatorAnimation";
+
+export default function AviatorGame() {
+  const [multiplier, setMultiplier] = useState(1);
+  const [isRunning, setIsRunning] = useState(false);
+  const [isCashedOut, setIsCashedOut] = useState(false);
+  const [message, setMessage] = useState("");
+  const crashPoint = useRef(1);
+
+  useEffect(() => {
+    if (!isRunning) return;
+    const interval = setInterval(() => {
+      setMultiplier((prev) => parseFloat((prev + prev * 0.03).toFixed(2)));
+    }, 100);
+    return () => clearInterval(interval);
+  }, [isRunning]);
+
+  useEffect(() => {
+    if (multiplier >= crashPoint.current && isRunning) {
+      setIsRunning(false);
+      if (!isCashedOut) {
+        setMessage("💥 Crashed! You lost.");
+      }
+    }
+  }, [multiplier, isRunning, isCashedOut]);
+
+  const startGame = () => {
+    crashPoint.current = parseFloat((Math.random() * 4 + 1).toFixed(2)); // 1.00x to 5.00x
+    setMultiplier(1);
+    setIsRunning(true);
+    setIsCashedOut(false);
+    setMessage("");
+  };
+
+  const handleCashOut = () => {
+    setIsRunning(false);
+    setIsCashedOut(true);
+    setMessage(`✅ Cashed out at ${multiplier}x!`);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-blue-900 to-purple-800 flex flex-col items-center justify-center p-4 text-white">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-6 text-center">
+        🚀 Aviator Game
+      </h1>
+
+      <div className="w-full max-w-2xl bg-white/10 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 text-center">
+        <div className="text-5xl font-extrabold text-yellow-400 mb-4">
+          {multiplier.toFixed(2)}x
+        </div>
+        <div className="mb-6 text-sm text-gray-300">{message}</div>
+        <div className=""></div>
+
+        <div className="flex-col justify-center gap-4">
+          <div className="p-2">
+            <WebGLStarter
+              multiplier={multiplier}
+              crashPoint={crashPoint.current}
+            />
+          </div>
+          {!isRunning && (
+            <button
+              onClick={startGame}
+              className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-xl shadow"
+            >
+              Start
+            </button>
+          )}
+          {isRunning && !isCashedOut && (
+            <button
+              onClick={handleCashOut}
+              className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-6 py-2 rounded-xl shadow"
+            >
+              Cash Out
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
