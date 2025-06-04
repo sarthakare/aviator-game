@@ -12,13 +12,12 @@ export default function AviatorAnimation({ multiplier, crashPoint }) {
 
     for (let i = 0; i <= steps; i++) {
       const x = (i / steps) * maxX;
-      const expGrowth = Math.min(Math.exp(x * 0.045), 100); // steeper exponential, clamp to 100
+      const expGrowth = Math.min(Math.exp(x * 0.045), 100);
       const y = 100 - expGrowth;
       points.push({ x, y });
     }
 
     setPathPoints(points);
-    // Set initial plane position (x=0)
     if (points.length) setPlanePosition(points[0]);
   }, []);
 
@@ -39,23 +38,23 @@ export default function AviatorAnimation({ multiplier, crashPoint }) {
   const coveredPathString = coveredPathPoints.map(p => `${p.x},${p.y}`).join(" ");
 
   return (
-    <div className="w-full relative p-5">
-      {/* Background effects */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-black z-0" />
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff22_1px,transparent_1px)] [background-size:20px_20px] opacity-20 z-0" />
+    <div className="relative w-full px-2 sm:px-5">
+      {/* Background layers */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-black z-0 rounded-xl" />
+      <div className="absolute inset-0 bg-[radial-gradient(#ffffff22_1px,transparent_1px)] [background-size:20px_20px] opacity-20 z-0 rounded-xl" />
 
       {/* Multiplier display */}
-      <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-6xl font-extrabold z-10">
+      <div className="absolute top-[20%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 text-white text-3xl sm:text-5xl md:text-6xl font-extrabold text-center">
         {multiplier.toFixed(2)}x
       </div>
 
-      {/* SVG Chart */}
+      {/* SVG graph */}
       <svg
         viewBox="0 0 80 100"
-        className="w-full h-[400px] z-10 relative"
+        className="w-full h-[250px] sm:h-[350px] md:h-[400px] z-10 relative"
         preserveAspectRatio="none"
       >
-        {/* Polygon fill only after multiplier starts */}
+        {/* Polygon fill */}
         {multiplier > 0 && coveredPathPoints.length > 1 && (
           <polygon
             points={`0,100 ${coveredPathString} ${planePosition.x},100`}
@@ -63,7 +62,7 @@ export default function AviatorAnimation({ multiplier, crashPoint }) {
           />
         )}
 
-        {/* Line path only after multiplier starts */}
+        {/* Line path */}
         {multiplier > 0 && (
           <polyline
             fill="none"
@@ -73,7 +72,7 @@ export default function AviatorAnimation({ multiplier, crashPoint }) {
           />
         )}
 
-        {/* Plane image (always visible) */}
+        {/* Plane icon */}
         <image
           href={planeImage}
           x={planePosition.x}
