@@ -41,13 +41,13 @@ export default function SpotlightBackground() {
 
       {/* Spotlights */}
       {/* Left group */}
-      <div style={{ position: "absolute", left: "6%", bottom: 0, zIndex: 2 }}>
+      <div style={{ position: "absolute", left: "16%", bottom: 0, zIndex: 2 }}>
         <div className="spotlight spotlight-left" style={{ left: 0, animationDelay: "0s" }} />
         <div className="spotlight spotlight-left" style={{ left: "2vh", animationDelay: "0.5s" }} />
         <div className="spotlight spotlight-left" style={{ left: "-2vh", animationDelay: "1s" }} />
       </div>
       {/* Right group */}
-      <div style={{ position: "absolute", right: "6%", bottom: 0, zIndex: 2 }}>
+      <div style={{ position: "absolute", right: "16%", bottom: 0, zIndex: 2 }}>
         <div className="spotlight spotlight-right" style={{ right: 0, animationDelay: "0s" }} />
         <div className="spotlight spotlight-right" style={{ right: "2vh", animationDelay: "0.5s" }} />
         <div className="spotlight spotlight-right" style={{ right: "-2vh", animationDelay: "1s" }} />

@@ -77,13 +77,22 @@ export default function AviatorAnimation({ multiplier, crashPoint }) {
     .map((p) => `${p.x},${p.y}`)
     .join(" ");
 
+  // Bobbing effect for the plane (makes it look like it's flying)
+  const bobbing =
+    !isCrashed && !hasReachedEnd
+      ? Math.sin(multiplier * 6) * 2 // Adjust frequency and amplitude as needed
+      : 0;
+
   return (
     <div className="relative w-full px-2 sm:px-5 overflow-hidden">
       {/* ✨ Spotlight Stage Background */}
       <SpotlightBackground />
 
       {/* Multiplier Display */}
-      <div className="absolute top-[20%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 text-white text-3xl sm:text-5xl md:text-6xl font-extrabold text-center">
+      <div
+        className={`absolute top-[20%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 text-3xl sm:text-5xl md:text-6xl font-extrabold text-center
+          ${isCrashed ? "text-red-500" : "text-white"}`}
+      >
         {multiplier.toFixed(2)}x
       </div>
 
@@ -92,7 +101,7 @@ export default function AviatorAnimation({ multiplier, crashPoint }) {
         viewBox="0 0 80 100"
         className="w-full h-[250px] sm:h-[350px] md:h-[400px] z-10 relative"
         preserveAspectRatio="none"
-        style={{ marginTop: "2rem", marginBottom: "2rem" }} // Add this line
+        style={{ marginTop: "2rem", marginBottom: "2rem" }}
       >
         {multiplier > 0 && coveredPathPoints.length > 1 && (
           <polygon
@@ -112,10 +121,10 @@ export default function AviatorAnimation({ multiplier, crashPoint }) {
 
         <image
           href={isCrashed ? blastImage : planeImage}
-          x={planePosition.x - 10}
-          y={planePosition.y - 15}
-          width="20"
-          height="20"
+          x={planePosition.x}
+          y={planePosition.y - 15 + bobbing}
+          width="15"
+          height="15"
         />
       </svg>
     </div>
