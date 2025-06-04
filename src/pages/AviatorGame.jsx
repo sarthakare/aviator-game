@@ -2,16 +2,19 @@ import { useEffect, useRef, useState } from "react";
 import WebGLStarter from "./AviatorAnimation";
 
 export default function AviatorGame() {
-  const [multiplier, setMultiplier] = useState(1);
+  const [multiplier, setMultiplier] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isCashedOut, setIsCashedOut] = useState(false);
   const [message, setMessage] = useState("");
-  const crashPoint = useRef(1);
+  const crashPoint = useRef(0);
 
   useEffect(() => {
     if (!isRunning) return;
     const interval = setInterval(() => {
-      setMultiplier((prev) => parseFloat((prev + prev * 0.03).toFixed(2)));
+      setMultiplier((prev) => {
+        const next = prev + 0.05; // slower smooth increment starting from 0
+        return next > 10 ? 10 : parseFloat(next.toFixed(2));
+      });
     }, 100);
     return () => clearInterval(interval);
   }, [isRunning]);
@@ -26,8 +29,8 @@ export default function AviatorGame() {
   }, [multiplier, isRunning, isCashedOut]);
 
   const startGame = () => {
-    crashPoint.current = parseFloat((Math.random() * 4 + 1).toFixed(2)); // 1.00x to 5.00x
-    setMultiplier(1);
+    crashPoint.current = parseFloat((Math.random() * 10).toFixed(2)); // 0.00x to 10.00x crash point
+    setMultiplier(0);
     setIsRunning(true);
     setIsCashedOut(false);
     setMessage("");
@@ -36,7 +39,7 @@ export default function AviatorGame() {
   const handleCashOut = () => {
     setIsRunning(false);
     setIsCashedOut(true);
-    setMessage(`✅ Cashed out at ${multiplier}x!`);
+    setMessage(`✅ Cashed out at ${multiplier.toFixed(2)}x!`);
   };
 
   return (
@@ -50,15 +53,16 @@ export default function AviatorGame() {
           {multiplier.toFixed(2)}x
         </div>
         <div className="mb-6 text-sm text-gray-300">{message}</div>
-        <div className=""></div>
 
         <div className="flex-col justify-center gap-4">
           <div className="p-2">
             <WebGLStarter
               multiplier={multiplier}
               crashPoint={crashPoint.current}
+              isRunning={isRunning}
             />
           </div>
+
           {!isRunning && (
             <button
               onClick={startGame}

@@ -6,15 +6,25 @@ export default function AviatorAnimation({ multiplier, crashPoint }) {
 	const [planePosition, setPlanePosition] = useState({ x: 0, y: 100 });
 
 	useEffect(() => {
-		const points = [];
-		const steps = 300;
-		for (let i = 0; i <= steps; i++) {
-			const x = (i / steps) * 100;
-			const y = 100 - Math.min(100, Math.exp(x * 0.05)); // inverted exponential
-			points.push({ x, y });
-		}
-		setPathPoints(points);
-	}, []);
+        const points = [];
+        const steps = 300;
+        for (let i = 0; i <= steps; i++) {
+            const x = (i / steps) * 100;
+            let y;
+            if (x <= 50) {
+                y = 100 - Math.exp(x * 0.03); // original path
+            } else {
+                // After x=50, make the plane go up faster (decrease y more rapidly)
+                y = 100 - Math.exp(50 * 0.03) - (x - 50) * 2.5; // adjust 2.5 for steepness
+            }
+
+            if (x >= 80 || y <= 0) break; // shrink path, stop at x=80
+
+            points.push({ x, y });
+        }
+        setPathPoints(points);
+    }, []);
+
 
 	useEffect(() => {
 		if (!pathPoints.length) return;
