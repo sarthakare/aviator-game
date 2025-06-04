@@ -1,1 +1,46 @@
 @import "tailwindcss";
+
+/* Background black "sky" */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  background-color: black;
+  overflow: hidden;
+}
+
+@keyframes swing-left {
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+}
+
+@keyframes swing-right {
+  0%, 100% { transform: rotate(10deg); }
+  50% { transform: rotate(-10deg); }
+}
+
+.spotlight {
+  position: absolute;
+  bottom: 0;
+  width: 5vh; /* narrower beam */
+  height: 110vh;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.3) 10%, rgba(255, 255, 255, 0) 70%);
+  opacity: 0.7; /* brighter */
+  filter: blur(1.5px);
+  transform-origin: bottom center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Left side: 3 beams with slight horizontal spacing and different animation delays */
+.spotlight-left {
+  left: 6%;
+  animation: swing-left 4s ease-in-out infinite;
+  animation-delay: 0s;
+}
+
+/* Right side: 3 beams with slight horizontal spacing and different animation delays */
+.spotlight-right {
+  right: 6%;
+  animation: swing-right 4s ease-in-out infinite;
+  animation-delay: 0s;
+}

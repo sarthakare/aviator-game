@@ -1,19 +1,27 @@
 import React, { useEffect, useState } from "react";
-import planeImage from "../assets/image.png"; // Red airplane silhouette
+import planeImage from "../assets/plane.png";
+import blastImage from "../assets/blast.png";
+import SpotlightBackground from "./SpotlightBackground"; // Adjust path accordingly
 
 export default function AviatorAnimation({ multiplier, crashPoint }) {
   const [pathPoints, setPathPoints] = useState([]);
   const [planePosition, setPlanePosition] = useState({ x: 0, y: 100 });
+  const [isCrashed, setIsCrashed] = useState(false);
+  const [hasReachedEnd, setHasReachedEnd] = useState(false);
 
+  const maxMultiplier = 10.0; // Max possible multiplier
+  const maxX = 60; // Max X value for the SVG
+
+  // Generate full path up to maxMultiplier
   useEffect(() => {
     const points = [];
     const steps = 800;
-    const maxX = 80;
 
     for (let i = 0; i <= steps; i++) {
-      const x = (i / steps) * maxX;
-      const expGrowth = Math.min(Math.exp(x * 0.045), 100);
-      const y = 100 - expGrowth;
+      const ratio = i / steps;
+      const x = ratio * maxX;
+      const virtualMultiplier = ratio * maxMultiplier;
+      const y = 100 - Math.min(Math.exp(virtualMultiplier * 0.4), 100); // Adjusted for steeper curve
       points.push({ x, y });
     }
 
@@ -21,40 +29,71 @@ export default function AviatorAnimation({ multiplier, crashPoint }) {
     if (points.length) setPlanePosition(points[0]);
   }, []);
 
+  // Calculate path covered up to current multiplier
   const coveredPathPoints = React.useMemo(() => {
     if (!pathPoints.length || multiplier <= 0) return [];
 
-    const index = Math.floor((multiplier / crashPoint) * pathPoints.length);
+    const progressRatio = Math.min(multiplier / maxMultiplier, 1); // Clamp to 1.0
+    const index = Math.floor(progressRatio * pathPoints.length);
     const limitedIndex = Math.min(index, pathPoints.length - 1);
     return pathPoints.slice(0, limitedIndex + 1);
-  }, [pathPoints, multiplier, crashPoint]);
+  }, [pathPoints, multiplier]);
 
+  // Update plane position
   useEffect(() => {
-    if (coveredPathPoints.length) {
-      setPlanePosition(coveredPathPoints[coveredPathPoints.length - 1]);
-    }
-  }, [coveredPathPoints]);
+    if (!coveredPathPoints.length) return;
 
-  const coveredPathString = coveredPathPoints.map(p => `${p.x},${p.y}`).join(" ");
+    const lastPoint = coveredPathPoints[coveredPathPoints.length - 1];
+
+    if (lastPoint.x >= maxX) {
+      setHasReachedEnd(true);
+    }
+
+    setPlanePosition((prev) => {
+      if (hasReachedEnd) {
+        return {
+          x: maxX,
+          y: Math.min(prev.y + 0.5, 100), // Simulate falling
+        };
+      }
+      return lastPoint;
+    });
+
+    if (multiplier >= crashPoint) {
+      setIsCrashed(true);
+    }
+  }, [coveredPathPoints, multiplier, crashPoint, hasReachedEnd]);
+
+  // Reset on restart
+  useEffect(() => {
+    if (multiplier === 0) {
+      setIsCrashed(false);
+      setHasReachedEnd(false);
+      setPlanePosition({ x: 0, y: 100 });
+    }
+  }, [multiplier]);
+
+  const coveredPathString = coveredPathPoints
+    .map((p) => `${p.x},${p.y}`)
+    .join(" ");
 
   return (
-    <div className="relative w-full px-2 sm:px-5">
-      {/* Background layers */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-black z-0 rounded-xl" />
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff22_1px,transparent_1px)] [background-size:20px_20px] opacity-20 z-0 rounded-xl" />
+    <div className="relative w-full px-2 sm:px-5 overflow-hidden">
+      {/* ✨ Spotlight Stage Background */}
+      <SpotlightBackground />
 
-      {/* Multiplier display */}
+      {/* Multiplier Display */}
       <div className="absolute top-[20%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 text-white text-3xl sm:text-5xl md:text-6xl font-extrabold text-center">
         {multiplier.toFixed(2)}x
       </div>
 
-      {/* SVG graph */}
+      {/* SVG Graph */}
       <svg
         viewBox="0 0 80 100"
         className="w-full h-[250px] sm:h-[350px] md:h-[400px] z-10 relative"
         preserveAspectRatio="none"
+        style={{ marginTop: "2rem", marginBottom: "2rem" }} // Add this line
       >
-        {/* Polygon fill */}
         {multiplier > 0 && coveredPathPoints.length > 1 && (
           <polygon
             points={`0,100 ${coveredPathString} ${planePosition.x},100`}
@@ -62,7 +101,6 @@ export default function AviatorAnimation({ multiplier, crashPoint }) {
           />
         )}
 
-        {/* Line path */}
         {multiplier > 0 && (
           <polyline
             fill="none"
@@ -72,10 +110,9 @@ export default function AviatorAnimation({ multiplier, crashPoint }) {
           />
         )}
 
-        {/* Plane icon */}
         <image
-          href={planeImage}
-          x={planePosition.x}
+          href={isCrashed ? blastImage : planeImage}
+          x={planePosition.x - 10}
           y={planePosition.y - 15}
           width="20"
           height="20"
