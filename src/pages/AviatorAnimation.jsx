@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import planeImage from "../assets/image.png"; // Replace with red airplane silhouette
+import planeImage from "../assets/image.png"; // Red airplane silhouette
 
 export default function AviatorAnimation({ multiplier, crashPoint }) {
   const [pathPoints, setPathPoints] = useState([]);
@@ -18,18 +18,25 @@ export default function AviatorAnimation({ multiplier, crashPoint }) {
     }
 
     setPathPoints(points);
+    // Set initial plane position (x=0)
+    if (points.length) setPlanePosition(points[0]);
   }, []);
 
-  useEffect(() => {
-    if (!pathPoints.length) return;
+  const coveredPathPoints = React.useMemo(() => {
+    if (!pathPoints.length || multiplier <= 0) return [];
 
     const index = Math.floor((multiplier / crashPoint) * pathPoints.length);
-    if (index >= 0 && index < pathPoints.length) {
-      setPlanePosition(pathPoints[index]);
-    }
-  }, [multiplier, crashPoint, pathPoints]);
+    const limitedIndex = Math.min(index, pathPoints.length - 1);
+    return pathPoints.slice(0, limitedIndex + 1);
+  }, [pathPoints, multiplier, crashPoint]);
 
-  const pathString = pathPoints.map(p => `${p.x},${p.y}`).join(" ");
+  useEffect(() => {
+    if (coveredPathPoints.length) {
+      setPlanePosition(coveredPathPoints[coveredPathPoints.length - 1]);
+    }
+  }, [coveredPathPoints]);
+
+  const coveredPathString = coveredPathPoints.map(p => `${p.x},${p.y}`).join(" ");
 
   return (
     <div className="w-full relative p-5">
@@ -48,21 +55,25 @@ export default function AviatorAnimation({ multiplier, crashPoint }) {
         className="w-full h-[400px] z-10 relative"
         preserveAspectRatio="none"
       >
-        {/* Background fill under the curve */}
-        <polygon
-          points={`0,100 ${pathString} ${planePosition.x},100`}
-          fill="rgba(255,0,102,0.3)"
-        />
+        {/* Polygon fill only after multiplier starts */}
+        {multiplier > 0 && coveredPathPoints.length > 1 && (
+          <polygon
+            points={`0,100 ${coveredPathString} ${planePosition.x},100`}
+            fill="rgba(255,0,102,0.3)"
+          />
+        )}
 
-        {/* Path Line */}
-        <polyline
-          fill="none"
-          stroke="#FF0066"
-          strokeWidth="1.5"
-          points={pathString}
-        />
+        {/* Line path only after multiplier starts */}
+        {multiplier > 0 && (
+          <polyline
+            fill="none"
+            stroke="#FF0066"
+            strokeWidth="1.5"
+            points={coveredPathString}
+          />
+        )}
 
-        {/* Plane Image */}
+        {/* Plane image (always visible) */}
         <image
           href={planeImage}
           x={planePosition.x}
