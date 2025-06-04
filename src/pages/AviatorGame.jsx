@@ -49,9 +49,6 @@ export default function AviatorGame() {
       </h1>
 
       <div className="w-full max-w-2xl bg-white/10 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 text-center">
-        <div className="text-5xl font-extrabold text-yellow-400 mb-4">
-          {multiplier.toFixed(2)}x
-        </div>
         <div className="mb-6 text-sm text-gray-300">{message}</div>
 
         <div className="flex-col justify-center gap-4">
