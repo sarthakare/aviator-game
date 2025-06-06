@@ -122,7 +122,7 @@ export default function AviatorAnimation({ multiplier, crashPoint }) {
         <image
           href={isCrashed ? blastImage : planeImage}
           x={planePosition.x}
-          y={planePosition.y - 15 + bobbing}
+          y={planePosition.y - 15 }
           width="15"
           height="15"
         />

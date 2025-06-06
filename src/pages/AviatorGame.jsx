@@ -29,7 +29,7 @@ export default function AviatorGame() {
   }, [multiplier, isRunning, isCashedOut]);
 
   const startGame = () => {
-    crashPoint.current = parseFloat((Math.random() * 10).toFixed(2));
+    crashPoint.current = parseFloat((Math.random() * 25).toFixed(2));
     setMultiplier(0);
     setIsRunning(true);
     setIsCashedOut(false);
