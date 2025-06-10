@@ -1,86 +1,113 @@
-import { useEffect, useRef, useState } from "react";
-import WebGLStarter from "./AviatorAnimation";
+import { useState } from "react";
+import AviatorAnimation from "./AviatorAnimation";
 
 export default function AviatorGame() {
-  const [multiplier, setMultiplier] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  const [isCashedOut, setIsCashedOut] = useState(false);
-  const [message, setMessage] = useState("");
-  const crashPoint = useRef(0);
+  const [start, setStart] = useState(false);
+  const crashPoint = 10; // You can randomize or fetch this from backend later
 
-  useEffect(() => {
-    if (!isRunning) return;
-    const interval = setInterval(() => {
-      setMultiplier((prev) => {
-        const next = prev + 0.05;
-        return next > 10 ? 10 : parseFloat(next.toFixed(2));
-      });
-    }, 100);
-    return () => clearInterval(interval);
-  }, [isRunning]);
-
-  useEffect(() => {
-    if (multiplier >= crashPoint.current && isRunning) {
-      setIsRunning(false);
-      if (!isCashedOut) {
-        setMessage("💥 Crashed! You lost.");
-      }
-    }
-  }, [multiplier, isRunning, isCashedOut]);
-
-  const startGame = () => {
-    crashPoint.current = parseFloat((Math.random() * 25).toFixed(2));
-    setMultiplier(0);
-    setIsRunning(true);
-    setIsCashedOut(false);
-    setMessage("");
-  };
-
-  const handleCashOut = () => {
-    setIsRunning(false);
-    setIsCashedOut(true);
-    setMessage(`✅ Cashed out at ${multiplier.toFixed(2)}x!`);
+  const handleStart = () => {
+    setStart(false);
+    setTimeout(() => setStart(true), 50);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-900 to-purple-800 flex flex-col items-center justify-center px-4 py-6 text-white">
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-center">
-        🚀 Aviator Game
-      </h1>
-
-      <div className="w-full max-w-3xl bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 text-center">
-        <div className="mb-4 sm:mb-6 text-sm sm:text-base text-gray-300 min-h-[1.5rem]">
-          {message}
+    <div className="h-screen overflow-y-auto bg-black text-white font-sans">
+      {/* Header */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-[#7000FF] flex justify-between items-center px-6 py-3 text-white text-sm font-semibold">
+        <div className="text-[#00FF00]">0.00 INR</div>
+        <div className="text-lg font-bold text-white">PILOT</div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs">DEMO0123</span>
+          <div className="w-6 h-6 rounded-full bg-gray-400" />
         </div>
+      </div>
 
-        <div className="flex flex-col items-center gap-4">
-          {/* Graph Area */}
-          <div className="w-full">
-            <WebGLStarter
-              multiplier={multiplier}
-              crashPoint={crashPoint.current}
-              isRunning={isRunning}
-            />
+      {/* Body */}
+      <div className="pt-14">
+        <div className="flex flex-col md:flex-row p-4 gap-4">
+          {/* Left Sidebar */}
+          <div className="w-full md:w-1/4 bg-[#1E1E1E] p-4 rounded-lg">
+            <div className="mb-4">
+              <div className="text-sm">
+                Quantity: <strong>0</strong>
+              </div>
+              <div className="text-sm">
+                Amount: <strong className="text-[#00FF00]">0.00 INR</strong>
+              </div>
+            </div>
+            <div className="text-xs text-gray-400">
+              Player | Bet | Rate | Win
+            </div>
+            {/* Dynamic bet table rows can go here */}
           </div>
 
-          {/* Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4">
-            {!isRunning && (
-              <button
-                onClick={startGame}
-                className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-xl shadow transition"
-              >
-                Start
-              </button>
-            )}
-            {isRunning && !isCashedOut && (
-              <button
-                onClick={handleCashOut}
-                className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-xl shadow transition"
-              >
-                Cash Out
-              </button>
-            )}
+          {/* Graph + Controls */}
+          <div className="w-full md:w-3/4 flex flex-col gap-4">
+            <div className="bg-[#111] rounded-xl overflow-hidden relative p-4">
+              <div className="absolute top-2 left-4 text-xs text-gray-400 mb-2">
+                ping: 97 ms
+              </div>
+              <AviatorAnimation start={start} crashPoint={crashPoint} />
+              {!start && (
+                <div className="absolute inset-0 flex items-center justify-center text-4xl font-bold text-red-500">
+                  Flew away. Try more
+                </div>
+              )}
+            </div>
+
+            {/* Betting Controls */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="bg-[#1E1E1E] p-4 rounded-lg text-center"
+                >
+                  <div className="flex justify-between text-xs mb-2">
+                    <span>Bet {i}</span>
+                    <span>Auto cash out</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <input
+                      type="text"
+                      value="1.01"
+                      readOnly
+                      className="w-1/3 text-center rounded bg-black text-white"
+                    />
+                    <input
+                      type="text"
+                      value="50.00"
+                      readOnly
+                      className="w-1/2 text-center rounded bg-black text-white"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 mb-2 text-xs">
+                    <button className="bg-black px-2 py-1 rounded">
+                      50.00
+                    </button>
+                    <button className="bg-black px-2 py-1 rounded">
+                      1000.00
+                    </button>
+                    <button className="bg-black px-2 py-1 rounded">
+                      5000.00
+                    </button>
+                    <button className="bg-black px-2 py-1 rounded">
+                      10000.00
+                    </button>
+                    <button className="bg-black px-2 py-1 rounded">½</button>
+                    <button className="bg-black px-2 py-1 rounded">x2</button>
+                    <button className="bg-black px-2 py-1 rounded col-span-3">
+                      Max
+                    </button>
+                  </div>
+                  <button
+                    onClick={handleStart}
+                    className="bg-green-500 hover:bg-green-600 text-white font-semibold w-full py-2 rounded shadow"
+                  >
+                    BET 50.00 INR
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
