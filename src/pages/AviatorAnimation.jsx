@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
-import planeImg from "../assets/plane1.png"; // Import your plane image
-import blastImg from "../assets/blast.png"; // Import your blast image
+import planeImg from "../assets/plane-without-propeller.png";
+import blastImg from "../assets/blast.png";
+import SpotlightBackground from "./SpotlightBackground"; // Make sure path is correct
 
 export default function AviatorCanvas({ start, crashPoint }) {
   const canvasRef = useRef(null);
@@ -27,11 +28,9 @@ export default function AviatorCanvas({ start, crashPoint }) {
       ctx.save();
       ctx.scale(canvas.width / 80, canvas.height / 100);
 
-      // Background
       ctx.fillStyle = "rgba(20,20,50,0.6)";
       ctx.fillRect(0, 0, 80, 100);
 
-      // Path
       ctx.beginPath();
       ctx.moveTo(0, 100);
       for (let m = 0; m <= value; m += 0.05) {
@@ -43,7 +42,6 @@ export default function AviatorCanvas({ start, crashPoint }) {
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Fill under the path
       ctx.lineTo((value / maxMultiplier) * maxX, 100);
       ctx.closePath();
       ctx.fillStyle = "rgba(255,0,102,0.3)";
@@ -53,14 +51,25 @@ export default function AviatorCanvas({ start, crashPoint }) {
       const planeY = getY(value);
       const crashed = value >= crashPoint;
 
-      // Draw plane or blast
       if (crashed) {
-        ctx.drawImage(blastRef.current, planeX - 3, planeY - 3, 6, 16); // adjust as needed
+        ctx.drawImage(blastRef.current, planeX - 3, planeY - 13, 6, 16);
       } else {
-        ctx.drawImage(planeRef.current, planeX - 3, planeY - 3, 6, 6); // adjust as needed
+        ctx.drawImage(planeRef.current, planeX - 3, planeY - 13, 6, 16);
+
+        const time = performance.now() / 1000;
+        const fullHeight = 8;
+        const halfHeight =
+          (fullHeight / 2) * Math.abs(Math.sin(time * Math.PI * 3));
+        const centerY = planeY - 12 + fullHeight / 2;
+
+        ctx.strokeStyle = "#aaa";
+        ctx.lineWidth = 0.2;
+        ctx.beginPath();
+        ctx.moveTo(planeX + 3, centerY - halfHeight);
+        ctx.lineTo(planeX + 3.25, centerY + halfHeight);
+        ctx.stroke();
       }
 
-      // Multiplier Text
       ctx.fillStyle = crashed ? "#FF0000" : "#FFFFFF";
       ctx.font = "bold 6px sans-serif";
       ctx.textAlign = "center";
@@ -69,7 +78,6 @@ export default function AviatorCanvas({ start, crashPoint }) {
       ctx.restore();
 
       value += 0.01;
-
       if (!crashed) {
         frameId = requestAnimationFrame(draw);
       }
@@ -82,7 +90,6 @@ export default function AviatorCanvas({ start, crashPoint }) {
     return () => cancelAnimationFrame(frameId);
   }, [start, crashPoint]);
 
-  // Clear on stop
   useEffect(() => {
     if (!start) {
       const ctx = canvasRef.current.getContext("2d");
@@ -92,11 +99,14 @@ export default function AviatorCanvas({ start, crashPoint }) {
 
   return (
     <div className="relative w-full overflow-hidden">
+      {/* Add spotlight animation background */}
+      <SpotlightBackground />
+
       <canvas
         ref={canvasRef}
         width={1000}
         height={800}
-        className="w-full h-[250px] sm:h-[350px] md:h-[400px] rounded-lg bg-transparent"
+        className="w-full h-[250px] sm:h-[350px] md:h-[400px] rounded-lg bg-transparent z-10 relative"
       />
     </div>
   );
