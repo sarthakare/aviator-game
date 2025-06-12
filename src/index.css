@@ -63,25 +63,21 @@ html, body, #root {
   }
 }
 
-@keyframes slideInLeft {
+@keyframes slideInLeftInfinite {
   0% {
-    left: 0%;
-    opacity: 0;
+    left: 8%;
   }
   100% {
     left: 16%;
-    opacity: 1;
   }
 }
 
-@keyframes slideInRight {
+@keyframes slideInRightInfinite {
   0% {
-    right: 0%;
-    opacity: 0;
+    right: 8%;
   }
   100% {
     right: 16%;
-    opacity: 1;
   }
 }
 
@@ -89,13 +85,12 @@ html, body, #root {
   position: absolute;
   bottom: 0;
   z-index: 2;
-  animation: slideInLeft 1.5s ease-out infinite alternate;
+  animation: slideInLeftInfinite 3s ease-in-out infinite alternate;
 }
 
 .spotlight-group-right {
   position: absolute;
   bottom: 0;
   z-index: 2;
-  animation: slideInRight 1.5s ease-out infinite alternate;
+  animation: slideInRightInfinite 3s ease-in-out infinite alternate;
 }
-
