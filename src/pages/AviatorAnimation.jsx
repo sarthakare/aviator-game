@@ -28,9 +28,6 @@ export default function AviatorCanvas({ start, crashPoint }) {
       ctx.save();
       ctx.scale(canvas.width / 80, canvas.height / 100);
 
-      ctx.fillStyle = "rgba(20,20,50,0.6)";
-      ctx.fillRect(0, 0, 80, 100);
-
       ctx.beginPath();
       ctx.moveTo(0, 100);
       for (let m = 0; m <= value; m += 0.05) {

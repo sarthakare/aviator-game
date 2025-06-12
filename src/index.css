@@ -8,6 +8,38 @@ html, body, #root {
   overflow: hidden;
 }
 
+/* Gradient background for night transition */
+@keyframes dayToNightGradient {
+  0% {
+    background: radial-gradient(ellipse at top, #000000 60%, #555347 100%); 
+  }
+  50% {
+    background: radial-gradient(ellipse at top, #000000 60%, #3f3f4a 100%); 
+  }
+  100% {
+    background: radial-gradient(ellipse at top, #000000 60%, #575151 100%); 
+  }
+}
+
+.animate-dayToNightGradient {
+  animation: dayToNightGradient 10s ease-in-out infinite alternate;
+}
+
+/* Stars */
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.star-twinkle {
+  animation: twinkle 2.5s infinite ease-in-out;
+}
+
+
 @keyframes swing-left {
   0%, 100% { transform: rotate(-10deg); }
   50% { transform: rotate(10deg); }
