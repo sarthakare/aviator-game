@@ -39,40 +39,63 @@ html, body, #root {
   animation: twinkle 2.5s infinite ease-in-out;
 }
 
-
-@keyframes swing-left {
-  0%, 100% { transform: rotate(-10deg); }
-  50% { transform: rotate(10deg); }
-}
-
-@keyframes swing-right {
-  0%, 100% { transform: rotate(10deg); }
-  50% { transform: rotate(-10deg); }
-}
-
+/* Spotlight animation */
 .spotlight {
   position: absolute;
   bottom: 0;
-  width: 5vh; /* narrower beam */
+  width: 5vh; /* same as your old design */
   height: 110vh;
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.3) 10%, rgba(255, 255, 255, 0) 70%);
-  opacity: 0.7; /* brighter */
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.6) 10%, rgba(255, 255, 255, 0) 70%);
+  opacity: 0.7;
   filter: blur(1.5px);
   transform-origin: bottom center;
   pointer-events: none;
   z-index: 0;
+  animation: swing 4s ease-in-out infinite alternate;
 }
 
-/* Left side: 3 beams with slight horizontal spacing and different animation delays */
-.spotlight-left {
-  left: 6%;
-  animation: swing-left 4s ease-in-out infinite;
-  animation-delay: 0s;
+@keyframes swing {
+  0% {
+    transform: rotate(var(--start-angle));
+  }
+  100% {
+    transform: rotate(var(--end-angle));
+  }
 }
 
-/* Right side: 3 beams with slight horizontal spacing and different animation delays */
-.spotlight-right {
-  right: 6%;
-  animation: swing-right 4s ease-in-out infinite;
-  animation-delay: 0s;
+@keyframes slideInLeft {
+  0% {
+    left: 0%;
+    opacity: 0;
+  }
+  100% {
+    left: 16%;
+    opacity: 1;
+  }
 }
+
+@keyframes slideInRight {
+  0% {
+    right: 0%;
+    opacity: 0;
+  }
+  100% {
+    right: 16%;
+    opacity: 1;
+  }
+}
+
+.spotlight-group-left {
+  position: absolute;
+  bottom: 0;
+  z-index: 2;
+  animation: slideInLeft 1.5s ease-out infinite alternate;
+}
+
+.spotlight-group-right {
+  position: absolute;
+  bottom: 0;
+  z-index: 2;
+  animation: slideInRight 1.5s ease-out infinite alternate;
+}
+

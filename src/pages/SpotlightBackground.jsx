@@ -56,33 +56,34 @@ export default function SpotlightBackground() {
 
       {/* Spotlights */}
       {/* Left group */}
-      <div style={{ position: "absolute", left: "16%", bottom: 0, zIndex: 2 }}>
+      <div className="spotlight-group-left">
         <div
-          className="spotlight spotlight-left"
-          style={{ left: 0, animationDelay: "0s" }}
+          className="spotlight"
+          style={{ "--start-angle": "-65deg", "--end-angle": "65deg" }}
         />
         <div
-          className="spotlight spotlight-left"
-          style={{ left: "2vh", animationDelay: "0.5s" }}
+          className="spotlight"
+          style={{ "--start-angle": "-50deg", "--end-angle": "70deg" }}
         />
         <div
-          className="spotlight spotlight-left"
-          style={{ left: "-2vh", animationDelay: "1s" }}
+          className="spotlight"
+          style={{ "--start-angle": "-35deg", "--end-angle": "75deg" }}
         />
       </div>
+
       {/* Right group */}
-      <div style={{ position: "absolute", right: "16%", bottom: 0, zIndex: 2 }}>
+      <div className="spotlight-group-right">
         <div
-          className="spotlight spotlight-right"
-          style={{ right: 0, animationDelay: "0s" }}
+          className="spotlight"
+          style={{ "--start-angle": "65deg", "--end-angle": "-65deg" }}
         />
         <div
-          className="spotlight spotlight-right"
-          style={{ right: "2vh", animationDelay: "0.5s" }}
+          className="spotlight"
+          style={{ "--start-angle": "50deg", "--end-angle": "-70deg" }}
         />
         <div
-          className="spotlight spotlight-right"
-          style={{ right: "-2vh", animationDelay: "1s" }}
+          className="spotlight"
+          style={{ "--start-angle": "35deg", "--end-angle": "-75deg" }}
         />
       </div>
     </div>
