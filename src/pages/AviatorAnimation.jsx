@@ -40,7 +40,7 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
 
       const planeX = (value / maxMultiplier) * maxX;
       const planeY = getY(value);
-      ctx.drawImage(planeRef.current, planeX, planeY - 13, 6, 16);
+      ctx.drawImage(planeRef.current, planeX + 1, planeY - 15, 6, 16);
 
       const time = performance.now() / 1000;
       const fullHeight = 8;
@@ -51,8 +51,8 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
       ctx.strokeStyle = "#aaa";
       ctx.lineWidth = 0.2;
       ctx.beginPath();
-      ctx.moveTo(planeX + 6, centerY - halfHeight);
-      ctx.lineTo(planeX + 6.25, centerY + halfHeight);
+      ctx.moveTo(planeX + 7, centerY - halfHeight - 2);
+      ctx.lineTo(planeX + 7.25, centerY + halfHeight);
       ctx.stroke();
 
       ctx.restore();
@@ -102,7 +102,7 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
           }, 5000);
         }
       } else {
-        ctx.drawImage(planeRef.current, planeX, planeY - 13, 6, 16);
+        ctx.drawImage(planeRef.current, planeX + 1, planeY - 15, 6, 16);
 
         const time = performance.now() / 1000;
         const fullHeight = 8;
@@ -113,8 +113,8 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
         ctx.strokeStyle = "#aaa";
         ctx.lineWidth = 0.2;
         ctx.beginPath();
-        ctx.moveTo(planeX + 6, centerY - halfHeight);
-        ctx.lineTo(planeX + 6.25, centerY + halfHeight);
+        ctx.moveTo(planeX + 7, centerY - halfHeight - 2);
+        ctx.lineTo(planeX + 7.25, centerY + halfHeight);
         ctx.stroke();
       }
 
