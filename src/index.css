@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
 /* Background black "sky" */
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
   background-color: black;
@@ -11,13 +13,13 @@ html, body, #root {
 /* Gradient background for night transition */
 @keyframes dayToNightGradient {
   0% {
-    background: radial-gradient(ellipse at top, #000000 60%, #555347 100%); 
+    background: radial-gradient(ellipse at top, #000000 60%, #555347 100%);
   }
   50% {
-    background: radial-gradient(ellipse at top, #000000 60%, #3f3f4a 100%); 
+    background: radial-gradient(ellipse at top, #000000 40%, #3f3f4a 100%);
   }
   100% {
-    background: radial-gradient(ellipse at top, #000000 60%, #575151 100%); 
+    background: radial-gradient(ellipse at top, #000000 20%, #575151 100%);
   }
 }
 
@@ -27,7 +29,8 @@ html, body, #root {
 
 /* Stars */
 @keyframes twinkle {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.4;
   }
   50% {
@@ -45,7 +48,11 @@ html, body, #root {
   bottom: 0;
   width: 5vh; /* same as your old design */
   height: 110vh;
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.6) 10%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.6) 10%,
+    rgba(255, 255, 255, 0) 70%
+  );
   opacity: 0.7;
   filter: blur(1.5px);
   transform-origin: bottom center;
@@ -83,14 +90,14 @@ html, body, #root {
 
 .spotlight-group-left {
   position: absolute;
-  bottom: 0;
+  bottom: -10vh;
   z-index: 2;
   animation: slideInLeftInfinite 3s ease-in-out infinite alternate;
 }
 
 .spotlight-group-right {
   position: absolute;
-  bottom: 0;
+  bottom: -10vh;
   z-index: 2;
   animation: slideInRightInfinite 3s ease-in-out infinite alternate;
 }
