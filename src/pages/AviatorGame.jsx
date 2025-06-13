@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import AviatorAnimation from "./AviatorAnimation";
 import BettingControls from "./BettingContols";
 import PlacedBets from "./PlacedBets";
+import SpotlightBackground from "./SpotlightBackground";
 
 export default function AviatorGame() {
   const [phase, setPhase] = useState("waiting"); // "waiting" | "running" | "crashed"
   const [progress, setProgress] = useState(0);
-  const crashPoint = 5; // multiplier at which plane crashes
+  const crashPoint = 10; // multiplier at which plane crashes
 
   // Handle waiting phase progress bar
   useEffect(() => {
@@ -63,51 +64,61 @@ export default function AviatorGame() {
 
           {/* Main Area */}
           <div className="w-full md:w-3/4 flex flex-col gap-4">
-            <div className="bg-[#111] rounded-xl overflow-hidden relative min-h-[400px] flex items-center justify-center p-4">
-              {/* Waiting Phase */}
-              {phase === "waiting" && (
-                <div className="flex flex-col items-center justify-center text-center w-full">
-                  <div className="text-xl font-semibold mb-2">
-                    Please wait<br />beginning of the new round
-                  </div>
-                  <div className="w-1/3 h-2 bg-gray-700 rounded">
-                    <div
-                      className="h-2 bg-green-500 rounded"
-                      style={{
-                        width: `${progress}%`,
-                        transition: "width 100ms linear",
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
+            <div className="bg-[#111] rounded-xl overflow-hidden relative min-h-[450px] flex items-center justify-center p-4">
+              {/* Background layer */}
+              <div className="absolute inset-0 z-0">
+                <SpotlightBackground />
+              </div>
 
-              {/* Running Phase */}
-              {phase === "running" && (
-                <AviatorAnimation
-                  start={true}
-                  crashPoint={crashPoint}
-                  onCrash={() => setPhase("crashed")}
-                />
-              )}
+              {/* Content layer */}
+              <div className="relative z-10 w-full h-full flex items-center justify-center">
+                {/* Waiting Phase */}
+                {phase === "waiting" && (
+                  <div className="flex flex-col items-center justify-center text-center w-full">
+                    <div className="text-xl font-semibold mb-2">
+                      Please wait
+                      <br />
+                      beginning of the new round
+                    </div>
+                    <div className="w-1/3 h-2 bg-gray-700 rounded">
+                      <div
+                        className="h-2 bg-green-500 rounded"
+                        style={{
+                          width: `${progress}%`,
+                          transition: "width 100ms linear",
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
 
-              {/* Crashed Phase */}
-              {phase === "crashed" && (
-                <div className="flex flex-col items-center justify-center text-center w-full">
-                  <div className="text-4xl font-bold text-red-500 mb-2">
-                    Flew away. Try more
+                {/* Running Phase */}
+                {phase === "running" && (
+                  <AviatorAnimation
+                    start={true}
+                    crashPoint={crashPoint}
+                    onCrash={() => setPhase("crashed")}
+                  />
+                )}
+
+                {/* Crashed Phase */}
+                {phase === "crashed" && (
+                  <div className="flex flex-col items-center justify-center text-center w-full">
+                    <div className="text-4xl font-bold text-red-500 mb-2">
+                      Flew away. Try more
+                    </div>
+                    <div className="w-1/3 h-2 bg-gray-700 rounded">
+                      <div
+                        className="h-2 bg-red-500 rounded"
+                        style={{
+                          width: `${progress}%`,
+                          transition: "width 100ms linear",
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-1/3 h-2 bg-gray-700 rounded">
-                    <div
-                      className="h-2 bg-red-500 rounded"
-                      style={{
-                        width: `${progress}%`,
-                        transition: "width 100ms linear",
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             {/* Betting Controls */}

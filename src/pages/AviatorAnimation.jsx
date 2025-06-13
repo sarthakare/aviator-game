@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import planeImg from "../assets/plane-without-propeller.png";
 import blastImg from "../assets/blast.png";
-import SpotlightBackground from "./SpotlightBackground";
 
 export default function AviatorCanvas({ start, crashPoint, onCrash }) {
   const canvasRef = useRef(null);
@@ -153,12 +152,11 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
 
   return (
     <div className="relative w-full overflow-hidden">
-      <SpotlightBackground />
       <canvas
         ref={canvasRef}
         width={1000}
         height={800}
-        className="w-full h-[250px] sm:h-[350px] md:h-[400px] rounded-lg bg-transparent z-10 relative"
+        className="w-full h-full sm:h-[350px] md:h-[400px] rounded-lg bg-transparent z-10 relative"
       />
     </div>
   );
