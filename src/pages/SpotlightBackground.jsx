@@ -86,6 +86,37 @@ export default function SpotlightBackground() {
           style={{ "--start-angle": "35deg", "--end-angle": "-75deg" }}
         />
       </div>
+
+      {/* Grid lines */}
+      {/* Horizontal line at 10vh from bottom */}
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          height: "2px",
+          background: "rgba(255,255,255,0.5)",
+          bottom: "3vh",
+          zIndex: 2,
+        }}
+      />
+
+      {/* Vertical lines (5 as example, spaced evenly) */}
+      {[0.1,0.2, 0.3,0.4, 0.5,0.6, 0.7,0.8, 0.9].map((left, i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            left: `${left * 100}%`,
+            width: "2px",
+            height: "3vh",
+            background: "rgba(255,255,255,0.5)",
+            bottom: 0, // Start from the bottom
+            transform: "translateX(-1px)",
+            zIndex: 2,
+          }}
+        />
+      ))}
     </div>
   );
 }
