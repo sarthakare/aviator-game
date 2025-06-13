@@ -3,7 +3,7 @@ import planeImg from "../assets/plane-without-propeller.png";
 import blastImg from "../assets/blast.png";
 import SpotlightBackground from "./SpotlightBackground"; // Make sure path is correct
 
-export default function AviatorCanvas({ start, crashPoint }) {
+export default function AviatorCanvas({ start, crashPoint, onCrash }) {
   const canvasRef = useRef(null);
   const planeRef = useRef(new Image());
   planeRef.current.src = planeImg;
@@ -20,6 +20,7 @@ export default function AviatorCanvas({ start, crashPoint }) {
   useEffect(() => {
     let frameId;
     let value = 0;
+    let hasCrashed = false;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
@@ -50,6 +51,11 @@ export default function AviatorCanvas({ start, crashPoint }) {
 
       if (crashed) {
         ctx.drawImage(blastRef.current, planeX - 3, planeY - 13, 6, 16);
+
+        if (!hasCrashed) {
+          hasCrashed = true;
+          onCrash?.(); // ✅ Notify parent ONCE
+        }
       } else {
         ctx.drawImage(planeRef.current, planeX - 3, planeY - 13, 6, 16);
 
@@ -85,7 +91,7 @@ export default function AviatorCanvas({ start, crashPoint }) {
     }
 
     return () => cancelAnimationFrame(frameId);
-  }, [start, crashPoint]);
+  }, [start, crashPoint, onCrash]);
 
   useEffect(() => {
     if (!start) {
@@ -96,9 +102,7 @@ export default function AviatorCanvas({ start, crashPoint }) {
 
   return (
     <div className="relative w-full overflow-hidden">
-      {/* Add spotlight animation background */}
       <SpotlightBackground />
-
       <canvas
         ref={canvasRef}
         width={1000}
@@ -108,3 +112,4 @@ export default function AviatorCanvas({ start, crashPoint }) {
     </div>
   );
 }
+
