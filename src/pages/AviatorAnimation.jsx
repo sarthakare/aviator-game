@@ -14,8 +14,11 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
   const maxMultiplier = 10;
   const maxX = 60;
 
-  const getY = (m) => {
-    return 100 - Math.min(Math.exp(m * 0.4), 100);
+  const getY = (m, time = 0) => {
+    // Reduced sinusoidal offset for less wobble
+    const baseY = 100 - Math.min(Math.exp(m * 0.4), 100);
+    const wobble = 0.7 * Math.sin(time * 1.2 + m); // amplitude 0.7, frequency 1.2
+    return baseY + wobble;
   };
 
   // Load images once
@@ -38,10 +41,11 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
       ctx.scale(canvas.width / 80, canvas.height / 100);
 
       const planeX = (value / maxMultiplier) * maxX;
-      const planeY = getY(value);
+      const time = performance.now() / 1000;
+      const planeY = getY(value, time);
+
       ctx.drawImage(planeRef.current, planeX + 1, planeY - 15, 6, 16);
 
-      const time = performance.now() / 1000;
       const fullHeight = 8;
       const halfHeight =
         (fullHeight / 2) * Math.abs(Math.sin(time * Math.PI * 3));
@@ -73,9 +77,10 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
 
       ctx.beginPath();
       ctx.moveTo(0, 100);
+      const time = performance.now() / 1000;
       for (let m = 0; m <= value; m += 0.05) {
         const x = (m / maxMultiplier) * maxX;
-        const y = getY(m);
+        const y = getY(m, time);
         ctx.lineTo(x, y);
       }
       ctx.strokeStyle = "#FF0066";
@@ -88,7 +93,7 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
       ctx.fill();
 
       const planeX = (value / maxMultiplier) * maxX;
-      const planeY = getY(value);
+      const planeY = getY(value, time);
       const crashed = value >= crashPoint;
 
       if (crashed) {
@@ -103,7 +108,6 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
       } else {
         ctx.drawImage(planeRef.current, planeX + 1, planeY - 15, 6, 16);
 
-        const time = performance.now() / 1000;
         const fullHeight = 8;
         const halfHeight =
           (fullHeight / 2) * Math.abs(Math.sin(time * Math.PI * 3));
