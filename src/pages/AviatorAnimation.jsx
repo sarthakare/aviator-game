@@ -44,7 +44,8 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
 
       const time = performance.now() / 1000;
       const fullHeight = 8;
-      const halfHeight = (fullHeight / 2) * Math.abs(Math.sin(time * Math.PI * 3));
+      const halfHeight =
+        (fullHeight / 2) * Math.abs(Math.sin(time * Math.PI * 3));
       const centerY = planeY - 12 + fullHeight / 2;
 
       ctx.strokeStyle = "#aaa";
@@ -92,17 +93,21 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
       const crashed = value >= crashPoint;
 
       if (crashed) {
-        ctx.drawImage(blastRef.current, planeX - 3, planeY - 13, 6, 16);
+        ctx.drawImage(blastRef.current, planeX, planeY - 13, 6, 16);
+
         if (!hasCrashedRef.current) {
           hasCrashedRef.current = true;
-          onCrash?.();
+          setTimeout(() => {
+            onCrash?.();
+          }, 5000);
         }
       } else {
         ctx.drawImage(planeRef.current, planeX, planeY - 13, 6, 16);
 
         const time = performance.now() / 1000;
         const fullHeight = 8;
-        const halfHeight = (fullHeight / 2) * Math.abs(Math.sin(time * Math.PI * 3));
+        const halfHeight =
+          (fullHeight / 2) * Math.abs(Math.sin(time * Math.PI * 3));
         const centerY = planeY - 12 + fullHeight / 2;
 
         ctx.strokeStyle = "#aaa";
