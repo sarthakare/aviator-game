@@ -6,7 +6,7 @@ import PlacedBets from "./PlacedBets";
 export default function AviatorGame() {
   const [phase, setPhase] = useState("waiting"); // "waiting" | "running" | "crashed"
   const [progress, setProgress] = useState(0);
-  const crashPoint = 10; // multiplier at which plane crashes
+  const crashPoint = 5; // multiplier at which plane crashes
 
   // Handle waiting phase progress bar
   useEffect(() => {

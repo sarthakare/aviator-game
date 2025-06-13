@@ -1,14 +1,16 @@
 import { useEffect, useRef } from "react";
 import planeImg from "../assets/plane-without-propeller.png";
 import blastImg from "../assets/blast.png";
-import SpotlightBackground from "./SpotlightBackground"; // Make sure path is correct
+import SpotlightBackground from "./SpotlightBackground";
 
 export default function AviatorCanvas({ start, crashPoint, onCrash }) {
   const canvasRef = useRef(null);
   const planeRef = useRef(new Image());
-  planeRef.current.src = planeImg;
   const blastRef = useRef(new Image());
-  blastRef.current.src = blastImg;
+  const hasCrashedRef = useRef(false);
+  const timeoutRef = useRef(null);
+  const frameIdRef = useRef(null);
+  const waitingFrameIdRef = useRef(null);
 
   const maxMultiplier = 10;
   const maxX = 60;
@@ -17,12 +19,52 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
     return 100 - Math.min(Math.exp(m * 0.4), 100);
   };
 
+  // Load images once
   useEffect(() => {
-    let frameId;
+    planeRef.current.src = planeImg;
+    blastRef.current.src = blastImg;
+  }, []);
+
+  useEffect(() => {
+    if (!start) return;
+
     let value = 0;
-    let hasCrashed = false;
+    hasCrashedRef.current = false;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
+
+    const drawWaitingFrame = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.scale(canvas.width / 80, canvas.height / 100);
+
+      const planeX = (value / maxMultiplier) * maxX;
+      const planeY = getY(value);
+      ctx.drawImage(planeRef.current, planeX, planeY - 13, 6, 16);
+
+      const time = performance.now() / 1000;
+      const fullHeight = 8;
+      const halfHeight = (fullHeight / 2) * Math.abs(Math.sin(time * Math.PI * 3));
+      const centerY = planeY - 12 + fullHeight / 2;
+
+      ctx.strokeStyle = "#aaa";
+      ctx.lineWidth = 0.2;
+      ctx.beginPath();
+      ctx.moveTo(planeX + 6, centerY - halfHeight);
+      ctx.lineTo(planeX + 6.25, centerY + halfHeight);
+      ctx.stroke();
+
+      ctx.restore();
+
+      waitingFrameIdRef.current = requestAnimationFrame(drawWaitingFrame);
+    };
+
+    // Start idle plane animation (before real animation starts)
+    if (planeRef.current.complete) {
+      drawWaitingFrame();
+    } else {
+      planeRef.current.onload = drawWaitingFrame;
+    }
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -51,25 +93,23 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
 
       if (crashed) {
         ctx.drawImage(blastRef.current, planeX - 3, planeY - 13, 6, 16);
-
-        if (!hasCrashed) {
-          hasCrashed = true;
-          onCrash?.(); // ✅ Notify parent ONCE
+        if (!hasCrashedRef.current) {
+          hasCrashedRef.current = true;
+          onCrash?.();
         }
       } else {
-        ctx.drawImage(planeRef.current, planeX - 3, planeY - 13, 6, 16);
+        ctx.drawImage(planeRef.current, planeX, planeY - 13, 6, 16);
 
         const time = performance.now() / 1000;
         const fullHeight = 8;
-        const halfHeight =
-          (fullHeight / 2) * Math.abs(Math.sin(time * Math.PI * 3));
+        const halfHeight = (fullHeight / 2) * Math.abs(Math.sin(time * Math.PI * 3));
         const centerY = planeY - 12 + fullHeight / 2;
 
         ctx.strokeStyle = "#aaa";
         ctx.lineWidth = 0.2;
         ctx.beginPath();
-        ctx.moveTo(planeX + 3, centerY - halfHeight);
-        ctx.lineTo(planeX + 3.25, centerY + halfHeight);
+        ctx.moveTo(planeX + 6, centerY - halfHeight);
+        ctx.lineTo(planeX + 6.25, centerY + halfHeight);
         ctx.stroke();
       }
 
@@ -82,15 +122,21 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
 
       value += 0.01;
       if (!crashed) {
-        frameId = requestAnimationFrame(draw);
+        frameIdRef.current = requestAnimationFrame(draw);
       }
     };
 
-    if (start) {
-      frameId = requestAnimationFrame(draw);
-    }
+    // Delay 5s, then start main animation and stop waiting animation
+    timeoutRef.current = setTimeout(() => {
+      cancelAnimationFrame(waitingFrameIdRef.current);
+      frameIdRef.current = requestAnimationFrame(draw);
+    }, 5000);
 
-    return () => cancelAnimationFrame(frameId);
+    return () => {
+      clearTimeout(timeoutRef.current);
+      cancelAnimationFrame(frameIdRef.current);
+      cancelAnimationFrame(waitingFrameIdRef.current);
+    };
   }, [start, crashPoint, onCrash]);
 
   useEffect(() => {
@@ -112,4 +158,3 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
     </div>
   );
 }
-
