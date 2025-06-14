@@ -4,163 +4,137 @@ import blastImg from "../assets/blast.png";
 
 export default function AviatorCanvas({ start, crashPoint, onCrash }) {
   const canvasRef = useRef(null);
-  const planeRef = useRef(new Image());
-  const blastRef = useRef(new Image());
-  const hasCrashedRef = useRef(false);
-  const timeoutRef = useRef(null);
-  const frameIdRef = useRef(null);
-  const waitingFrameIdRef = useRef(null);
+  const containerRef = useRef(null);
+  const planeImage = useRef(new Image());
+  const blastImage = useRef(new Image());
 
+  const animationId = useRef(null);
+  const delayTimeout = useRef(null);
+  const crashed = useRef(false);
   const maxMultiplier = 10;
   const maxX = 60;
 
-  const getY = (m, time = 0) => {
-    // Reduced sinusoidal offset for less wobble
-    const baseY = 100 - Math.min(Math.exp(m * 0.4), 100);
-    const wobble = 0.7 * Math.sin(time * 1.2 + m); // amplitude 0.7, frequency 1.2
-    return baseY + wobble;
-  };
+  const getY = (m) => 100 - Math.min(Math.exp(m * 0.4), 100);
 
-  // Load images once
   useEffect(() => {
-    planeRef.current.src = planeImg;
-    blastRef.current.src = blastImg;
+    planeImage.current.src = planeImg;
+    blastImage.current.src = blastImg;
+  }, []);
+
+  useEffect(() => {
+    const resizeCanvas = () => {
+      const canvas = canvasRef.current;
+      const parent = containerRef.current;
+      if (canvas && parent) {
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight;
+      }
+    };
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+    return () => window.removeEventListener("resize", resizeCanvas);
   }, []);
 
   useEffect(() => {
     if (!start) return;
 
-    let value = 0;
-    hasCrashedRef.current = false;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
+    let value = 0;
+    crashed.current = false;
 
-    const drawWaitingFrame = () => {
+    const drawFrame = (wait = false) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.save();
       ctx.scale(canvas.width / 80, canvas.height / 100);
 
       const planeX = (value / maxMultiplier) * maxX;
       const time = performance.now() / 1000;
-      const planeY = getY(value, time);
+      const planeY = getY(value);
 
-      ctx.drawImage(planeRef.current, planeX + 1, planeY - 15, 6, 16);
-
-      const fullHeight = 8;
-      const halfHeight =
-        (fullHeight / 2) * Math.abs(Math.sin(time * Math.PI * 3));
-      const centerY = planeY - 12 + fullHeight / 2;
-
-      ctx.strokeStyle = "#aaa";
-      ctx.lineWidth = 0.2;
-      ctx.beginPath();
-      ctx.moveTo(planeX + 7, centerY - halfHeight - 2);
-      ctx.lineTo(planeX + 7.25, centerY + halfHeight);
-      ctx.stroke();
-
-      ctx.restore();
-
-      waitingFrameIdRef.current = requestAnimationFrame(drawWaitingFrame);
-    };
-
-    // Start idle plane animation (before real animation starts)
-    if (planeRef.current.complete) {
-      drawWaitingFrame();
-    } else {
-      planeRef.current.onload = drawWaitingFrame;
-    }
-
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.save();
-      ctx.scale(canvas.width / 80, canvas.height / 100);
-
-      ctx.beginPath();
-      ctx.moveTo(0, 100);
-      const time = performance.now() / 1000;
-      for (let m = 0; m <= value; m += 0.05) {
-        const x = (m / maxMultiplier) * maxX;
-        const y = getY(m, time);
-        ctx.lineTo(x, y);
-      }
-      ctx.strokeStyle = "#FF0066";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      ctx.lineTo((value / maxMultiplier) * maxX, 100);
-      ctx.closePath();
-      ctx.fillStyle = "rgba(255,0,102,0.3)";
-      ctx.fill();
-
-      const planeX = (value / maxMultiplier) * maxX;
-      const planeY = getY(value, time);
-      const crashed = value >= crashPoint;
-
-      if (crashed) {
-        ctx.drawImage(blastRef.current, planeX, planeY - 13, 6, 16);
-
-        if (!hasCrashedRef.current) {
-          hasCrashedRef.current = true;
-          setTimeout(() => {
-            onCrash?.();
-          }, 5000);
+      if (!wait) {
+        // Draw path
+        ctx.beginPath();
+        ctx.moveTo(0, 100);
+        for (let m = 0; m <= value; m += 0.05) {
+          ctx.lineTo((m / maxMultiplier) * maxX, getY(m));
         }
-      } else {
-        ctx.drawImage(planeRef.current, planeX + 1, planeY - 15, 6, 16);
+        ctx.strokeStyle = "#FF0066";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.lineTo(planeX, 100);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(255,0,102,0.3)";
+        ctx.fill();
+      }
 
-        const fullHeight = 8;
-        const halfHeight =
-          (fullHeight / 2) * Math.abs(Math.sin(time * Math.PI * 3));
-        const centerY = planeY - 12 + fullHeight / 2;
-
+      const drawFlame = () => {
+        const full = 8;
+        const half = (full / 2) * Math.abs(Math.sin(time * Math.PI * 3));
+        const centerY = planeY - 12 + full / 2;
         ctx.strokeStyle = "#aaa";
         ctx.lineWidth = 0.2;
         ctx.beginPath();
-        ctx.moveTo(planeX + 7, centerY - halfHeight - 2);
-        ctx.lineTo(planeX + 7.25, centerY + halfHeight);
+        ctx.moveTo(planeX + 7, centerY - half - 2);
+        ctx.lineTo(planeX + 7.25, centerY + half);
         ctx.stroke();
+      };
+
+      const isCrash = value >= crashPoint;
+      if (isCrash) {
+        ctx.drawImage(blastImage.current, planeX, planeY - 13, 6, 16);
+        if (!crashed.current) {
+          crashed.current = true;
+          onCrash?.();
+        }
+      } else {
+        ctx.drawImage(planeImage.current, planeX + 1, planeY - 15, 6, 16);
+        drawFlame();
       }
 
-      ctx.fillStyle = crashed ? "#FF0000" : "#FFFFFF";
+      ctx.fillStyle = isCrash ? "#FF0000" : "#FFFFFF";
       ctx.font = "bold 6px sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(`${value.toFixed(2)}x`, 40, 20);
 
       ctx.restore();
 
-      value += 0.01;
-      if (!crashed) {
-        frameIdRef.current = requestAnimationFrame(draw);
+      if (!isCrash && !wait) {
+        value += 0.01;
+        animationId.current = requestAnimationFrame(() => drawFrame(false));
+      } else if (wait) {
+        animationId.current = requestAnimationFrame(() => drawFrame(true));
       }
     };
 
-    // Delay 5s, then start main animation and stop waiting animation
-    timeoutRef.current = setTimeout(() => {
-      cancelAnimationFrame(waitingFrameIdRef.current);
-      frameIdRef.current = requestAnimationFrame(draw);
+    // Step 1: idle animation
+    drawFrame(true);
+
+    // Step 2: after delay, start real animation
+    delayTimeout.current = setTimeout(() => {
+      cancelAnimationFrame(animationId.current);
+      animationId.current = requestAnimationFrame(() => drawFrame(false));
     }, 5000);
 
     return () => {
-      clearTimeout(timeoutRef.current);
-      cancelAnimationFrame(frameIdRef.current);
-      cancelAnimationFrame(waitingFrameIdRef.current);
+      cancelAnimationFrame(animationId.current);
+      clearTimeout(delayTimeout.current);
     };
   }, [start, crashPoint, onCrash]);
 
   useEffect(() => {
     if (!start) {
-      const ctx = canvasRef.current.getContext("2d");
-      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
   }, [start]);
 
   return (
-    <div className="relative w-full overflow-hidden">
+    <div ref={containerRef} className="relative w-full h-full overflow-hidden">
       <canvas
         ref={canvasRef}
-        width={1000}
-        height={800}
-        className="w-full h-full sm:h-[350px] md:h-[400px] rounded-lg bg-transparent z-10 relative"
+        className="absolute top-0 left-0 w-full h-full bg-transparent"
       />
     </div>
   );

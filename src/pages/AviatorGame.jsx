@@ -7,9 +7,9 @@ import SpotlightBackground from "./SpotlightBackground";
 export default function AviatorGame() {
   const [phase, setPhase] = useState("waiting"); // "waiting" | "running" | "crashed"
   const [progress, setProgress] = useState(0);
-  const crashPoint = 10; // multiplier at which plane crashes
+  const crashPoint = 10;
 
-  // Handle waiting phase progress bar
+  // Waiting phase logic
   useEffect(() => {
     if (phase === "waiting") {
       setProgress(0);
@@ -27,7 +27,7 @@ export default function AviatorGame() {
     }
   }, [phase]);
 
-  // Handle delay after crash
+  // Crashed phase logic
   useEffect(() => {
     if (phase === "crashed") {
       setProgress(0);
@@ -46,85 +46,55 @@ export default function AviatorGame() {
   }, [phase]);
 
   return (
-    <div className="h-screen overflow-y-auto bg-black text-white font-sans">
-      {/* Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-[#7000FF] flex justify-between items-center px-6 py-3 text-white text-sm font-semibold">
-        <div className="text-lg font-bold text-white">PILOT</div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs">DEMO0123</span>
-          <div className="w-6 h-6 rounded-full bg-gray-400" />
-        </div>
-      </div>
+    <div className="w-full h-full bg-black text-white">
+      {/* Fullscreen Background */}
+      <SpotlightBackground />
 
-      {/* Body */}
-      <div className="pt-14">
-        <div className="flex flex-col md:flex-row p-4 gap-4">
-          {/* Left Sidebar */}
-          <PlacedBets />
-
-          {/* Main Area */}
-          <div className="w-full md:w-3/4 flex flex-col gap-4">
-            <div className="bg-[#111] rounded-xl overflow-hidden relative min-h-[450px] flex items-center justify-center p-4">
-              {/* Background layer */}
-              <div className="absolute inset-0 z-0">
-                <SpotlightBackground />
-              </div>
-
-              {/* Content layer */}
-              <div className="relative z-10 w-full h-full flex items-center justify-center">
-                {/* Waiting Phase */}
-                {phase === "waiting" && (
-                  <div className="flex flex-col items-center justify-center text-center w-full">
-                    <div className="text-xl font-semibold mb-2">
-                      Please wait
-                      <br />
-                      beginning of the new round
-                    </div>
-                    <div className="w-1/3 h-2 bg-gray-700 rounded">
-                      <div
-                        className="h-2 bg-green-500 rounded"
-                        style={{
-                          width: `${progress}%`,
-                          transition: "width 100ms linear",
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Running Phase */}
-                {phase === "running" && (
-                  <AviatorAnimation
-                    start={true}
-                    crashPoint={crashPoint}
-                    onCrash={() => setPhase("crashed")}
-                  />
-                )}
-
-                {/* Crashed Phase */}
-                {phase === "crashed" && (
-                  <div className="flex flex-col items-center justify-center text-center w-full">
-                    <div className="text-4xl font-bold text-red-500 mb-2">
-                      Flew away. Try more
-                    </div>
-                    <div className="w-1/3 h-2 bg-gray-700 rounded">
-                      <div
-                        className="h-2 bg-red-500 rounded"
-                        style={{
-                          width: `${progress}%`,
-                          transition: "width 100ms linear",
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
+      {/* Content */}
+      <div className="absolute inset-0 flex items-center justify-center z-10">
+        {phase === "waiting" && (
+          <div className="text-center space-y-4 w-full max-w-md px-4">
+            <div className="text-xl font-semibold">
+              Please wait
+              <br />
+              beginning of the new round
             </div>
-
-            {/* Betting Controls */}
-            <BettingControls />
+            <div className="w-full h-2 bg-gray-700 rounded">
+              <div
+                className="h-2 bg-green-500 rounded"
+                style={{
+                  width: `${progress}%`,
+                  transition: "width 100ms linear",
+                }}
+              />
+            </div>
           </div>
-        </div>
+        )}
+
+        {phase === "running" && (
+          <AviatorAnimation
+            start={true}
+            crashPoint={crashPoint}
+            onCrash={() => setPhase("crashed")}
+          />
+        )}
+
+        {phase === "crashed" && (
+          <div className="text-center space-y-4 w-full max-w-md px-4">
+            <div className="text-4xl font-bold text-red-500">
+              Flew away. Try more
+            </div>
+            <div className="w-full h-2 bg-gray-700 rounded">
+              <div
+                className="h-2 bg-red-500 rounded"
+                style={{
+                  width: `${progress}%`,
+                  transition: "width 100ms linear",
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
