@@ -84,8 +84,10 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
       if (isCrash) {
         ctx.drawImage(blastImage.current, planeX, planeY - 13, 6, 16);
         if (!crashed.current) {
-          crashed.current = true;
-          onCrash?.();
+          setTimeout(() => {
+            crashed.current = true;
+            onCrash();
+          }, 5000);
         }
       } else {
         ctx.drawImage(planeImage.current, planeX + 1, planeY - 15, 6, 16);
@@ -100,7 +102,7 @@ export default function AviatorCanvas({ start, crashPoint, onCrash }) {
       ctx.restore();
 
       if (!isCrash && !wait) {
-        value += 0.01;
+        value += 0.025; // Increased speed of multiplier
         animationId.current = requestAnimationFrame(() => drawFrame(false));
       } else if (wait) {
         animationId.current = requestAnimationFrame(() => drawFrame(true));
