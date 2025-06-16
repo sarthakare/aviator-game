@@ -22,7 +22,7 @@ export default function AviatorGame() {
           }
           return prev + 2;
         });
-      }, 100);
+      }, 1);
       return () => clearInterval(interval);
     }
   }, [phase]);

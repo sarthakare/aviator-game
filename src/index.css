@@ -8,40 +8,7 @@ body,
   margin: 0;
   background-color: black;
   overflow: hidden;
-}
-
-/* Gradient background for night transition */
-@keyframes dayToNightGradient {
-  0% {
-    background: radial-gradient(circle at top, #000000 60%, #555347 100%);
-  }
-  50% {
-    background: radial-gradient(circle at top, #000000 40%, #3f3f4a 100%);
-  }
-  100% {
-    background: radial-gradient(circle at top, #000000 20%, #575151 100%);
-  }
-}
-
-.animate-dayToNightGradient {
-  animation: dayToNightGradient 10s ease-in-out infinite alternate;
-}
-
-/* Subtle night breathing effect */
-@keyframes breathingSky {
-  0% {
-    background: radial-gradient(circle at top, #232946 0%, #18181c 100%);
-  }
-  50% {
-    background: radial-gradient(circle at top, #232946 10%, #23232a 100%);
-  }
-  100% {
-    background: radial-gradient(circle at top, #232946 0%, #18181c 100%);
-  }
-}
-
-.animate-breathingSky {
-  animation: breathingSky 12s ease-in-out infinite;
+  background: radial-gradient(circle at top, #000000 80%, #5e5e5e 100%);
 }
 
 /* Stars */
