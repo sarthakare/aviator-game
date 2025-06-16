@@ -52,14 +52,16 @@ export default function AviatorAnimation() {
     let animationId;
     let lastIndex = curvePoints.length - 1;
     let startTime = null;
+    let waiting = true;
+    let waitStart = null;
 
-    function draw(timestamp) {
-      if (!startTime) startTime = timestamp;
-      const elapsed = (timestamp - startTime) / 1000;
+    const drawWaiting = (timestamp) => {
+      if (!waitStart) waitStart = timestamp;
+      const elapsed = (timestamp - waitStart) / 1000;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // === Draw axes ===
+      // Axes
       ctx.strokeStyle = "#888";
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -69,7 +71,138 @@ export default function AviatorAnimation() {
       ctx.lineTo(1, canvas.height);
       ctx.stroke();
 
-      // === Axis labels ===
+      // Labels
+      ctx.fillStyle = "#aaa";
+      ctx.font = "10px Arial";
+      ctx.textAlign = "center";
+      const tickSpacing = 100;
+      const labelOffset = 15;
+      for (let x = 0; x <= canvas.width; x += tickSpacing) {
+        ctx.beginPath();
+        ctx.moveTo(x, canvas.height - 5);
+        ctx.lineTo(x, canvas.height + 5);
+        ctx.stroke();
+        ctx.fillText(`${x}`, x, canvas.height - labelOffset);
+      }
+      ctx.textAlign = "right";
+      for (let y = 0; y <= canvas.height; y += tickSpacing) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(5, y);
+        ctx.stroke();
+        ctx.fillText(`${canvas.height - y}`, 25, y + 3);
+      }
+
+      // Static plane at origin
+      const imgWidth = 200;
+      const imgHeight = 100;
+      const planeX = 150;
+      const planeY = canvas.height - 50;
+
+      if (img.complete) {
+        ctx.drawImage(
+          img,
+          planeX - imgWidth / 2,
+          planeY - imgHeight / 2,
+          imgWidth,
+          imgHeight
+        );
+
+        // === Animated propeller at origin ===
+        const propellerX = planeX + 75;
+        const propellerY = planeY - 15;
+        const maxRadiusY = 17;
+        const maxRadiusX = 3;
+        const scale = Math.abs(Math.sin(elapsed * Math.PI * 4));
+        const radiusY = maxRadiusY * scale;
+        const radiusX = maxRadiusX * scale;
+
+        ctx.fillStyle = "#FF0066";
+
+        // Top ellipse
+        ctx.beginPath();
+        ctx.ellipse(
+          propellerX,
+          propellerY - radiusY * 1.5,
+          radiusX,
+          radiusY,
+          0,
+          0,
+          2 * Math.PI
+        );
+        ctx.fill();
+
+        // Bottom ellipse
+        ctx.beginPath();
+        ctx.ellipse(
+          propellerX,
+          propellerY + radiusY * 2,
+          radiusX,
+          radiusY,
+          0,
+          0,
+          2 * Math.PI
+        );
+        ctx.fill();
+
+        // Second mirrored propeller
+        const propellerX2 = planeX + 60;
+        const propellerY2 = planeY + 7;
+        const radiusY2 = maxRadiusY * scale;
+        const radiusX2 = maxRadiusX * scale;
+
+        ctx.beginPath();
+        ctx.ellipse(
+          propellerX2,
+          propellerY2 - radiusY2 * 1.5,
+          radiusX2,
+          radiusY2,
+          0,
+          0,
+          2 * Math.PI
+        );
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.ellipse(
+          propellerX2,
+          propellerY2 + radiusY2 * 1.5,
+          radiusX2,
+          radiusY2,
+          0,
+          0,
+          2 * Math.PI
+        );
+        ctx.fill();
+      }
+
+      if (elapsed < 5) {
+        animationId = requestAnimationFrame(drawWaiting);
+      } else {
+        waiting = false;
+        requestAnimationFrame(draw);
+      }
+    };
+
+    const draw = (timestamp) => {
+      if (waiting) return;
+
+      if (!startTime) startTime = timestamp;
+      const elapsed = (timestamp - startTime) / 1000;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Axes
+      ctx.strokeStyle = "#888";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height - 1);
+      ctx.lineTo(canvas.width, canvas.height - 1);
+      ctx.moveTo(1, 0);
+      ctx.lineTo(1, canvas.height);
+      ctx.stroke();
+
+      // Labels
       ctx.fillStyle = "#aaa";
       ctx.font = "10px Arial";
       ctx.textAlign = "center";
@@ -101,51 +234,41 @@ export default function AviatorAnimation() {
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // === Draw plane + animated propeller line ===
       const pt = curvePoints[index];
       const imgWidth = 200;
       const imgHeight = 100;
 
       if (img.complete) {
+        const planeX = pt.x + 150; // Match the offsets you gave in drawImage
+        const planeY = pt.y - 50;
+
         ctx.drawImage(
           img,
-          pt.x - imgWidth / 2,
-          pt.y - imgHeight / 2,
+          planeX - imgWidth / 2,
+          planeY - imgHeight / 2,
           imgWidth,
           imgHeight
         );
 
-        // === Draw animated front line (propeller - I) ===
-        // === Draw animated propeller (figure-8 with two circles) ===
-        // === Draw animated propeller (figure-8 with vertical ellipses) ===
-        const propellerX = pt.x + 75;
-        const propellerY = pt.y - 15;
-        const maxRadiusY = 17; // vertical (taller)
-        const maxRadiusX = 3; // horizontal (narrower)
-        const scale = Math.abs(Math.sin(elapsed * Math.PI * 4)); // 2 cycles/sec
+        // === Animated propellers ===
+        const propellerX = planeX + 75;
+        const propellerY = planeY - 15;
+        const propellerX2 = planeX + 60;
+        const propellerY2 = planeY + 7;
+
+        const maxRadiusY = 17;
+        const maxRadiusX = 3;
+        const scale = Math.abs(Math.sin(elapsed * Math.PI * 4));
         const radiusY = maxRadiusY * scale;
         const radiusX = maxRadiusX * scale;
 
         ctx.fillStyle = "#FF0066";
 
-        // Top vertical ellipse
-        ctx.beginPath();
-        ctx.ellipse(
-          propellerX, // x-center
-          propellerY - radiusY * 1.5, // y-center (above plane center)
-          radiusX, // horizontal axis (X)
-          radiusY, // vertical axis (Y)
-          0, // rotation
-          0,
-          2 * Math.PI
-        );
-        ctx.fill();
-
-        // Bottom vertical ellipse
+        // Top ellipse
         ctx.beginPath();
         ctx.ellipse(
           propellerX,
-          propellerY + radiusY * 2, // below plane center
+          propellerY - radiusY * 1.5,
           radiusX,
           radiusY,
           0,
@@ -154,37 +277,38 @@ export default function AviatorAnimation() {
         );
         ctx.fill();
 
-        // === Draw second animated propeller (mirrored/offset) ===
-        const propellerX2 = pt.x + 60; // slightly to the left of the first set
-        const propellerY2 = pt.y + 7 ;
-        const maxRadiusY2 = 17; // vertical (taller)
-        const maxRadiusX2 = 3; // horizontal (narrower)
-        const scale2 = Math.abs(Math.sin(elapsed * Math.PI * 4)); // 2 cycles/sec
-        const radiusY2 = maxRadiusY2 * scale2 ;
-        const radiusX2= maxRadiusX2 * scale2;
-
-        ctx.fillStyle = "#FF0066";
-
-        // Top vertical ellipse (second propeller)
+        // Bottom ellipse
         ctx.beginPath();
         ctx.ellipse(
-          propellerX2,
-          propellerY2 - radiusY * 1.5,
-          radiusX2,
-          radiusY2,
+          propellerX,
+          propellerY + radiusY * 2,
+          radiusX,
+          radiusY,
           0,
           0,
           2 * Math.PI
         );
         ctx.fill();
 
-        // Bottom vertical ellipse (second propeller)
+        // Second mirrored propeller
+        ctx.beginPath();
+        ctx.ellipse(
+          propellerX2,
+          propellerY2 - radiusY * 1.5,
+          radiusX,
+          radiusY,
+          0,
+          0,
+          2 * Math.PI
+        );
+        ctx.fill();
+
         ctx.beginPath();
         ctx.ellipse(
           propellerX2,
           propellerY2 + radiusY * 1.5,
-          radiusX2,
-          radiusY2,
+          radiusX,
+          radiusY,
           0,
           0,
           2 * Math.PI
@@ -192,18 +316,19 @@ export default function AviatorAnimation() {
         ctx.fill();
       }
 
-      // === Only increment index if animation not finished ===
       if (index < lastIndex) {
         index++;
       }
 
       animationId = requestAnimationFrame(draw);
-    }
+    };
 
-    img.onload = () => requestAnimationFrame(draw);
-    if (img.complete) requestAnimationFrame(draw);
+    img.onload = () => requestAnimationFrame(drawWaiting);
+    if (img.complete) requestAnimationFrame(drawWaiting);
 
-    return () => cancelAnimationFrame(animationId);
+    return () => {
+      cancelAnimationFrame(animationId);
+    };
   }, [curvePoints]);
 
   return (
