@@ -31,7 +31,7 @@ body,
   position: absolute;
   bottom: 0;
   width: 5vh; /* same as your old design */
-  height: 110vh;
+  height: 200vh;
   background: radial-gradient(
     ellipse at center,
     rgba(255, 255, 255, 0.6) 10%,

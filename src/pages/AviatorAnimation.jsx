@@ -177,6 +177,24 @@ export default function AviatorAnimation({ crashPoint, onCrash }) {
       ctx.lineWidth = 4;
       ctx.stroke();
 
+      // === Fill area below the graph with transparency ===
+      if ((isWaiting ? 0 : index) > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(curvePoints[0].x, curvePoints[0].y);
+        for (let i = 1; i <= (isWaiting ? 0 : index); i++) {
+          ctx.lineTo(curvePoints[i].x, curvePoints[i].y);
+        }
+        // Go down to bottom of canvas from last point
+        ctx.lineTo(curvePoints[Math.max(1, (isWaiting ? 0 : index))].x, ctx.canvas.height);
+        // Go to bottom left
+        ctx.lineTo(curvePoints[0].x, ctx.canvas.height);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(255, 0, 102, 0.15)"; // semi-transparent fill
+        ctx.fill();
+        ctx.restore();
+      }
+
       // Plane/blast logic
       const imgWidth = 200;
       const imgHeight = 100;
