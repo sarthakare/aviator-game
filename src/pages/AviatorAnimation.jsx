@@ -59,11 +59,20 @@ export default function AviatorAnimation({ crashPoint, onCrash }) {
     let blastTime = null;
     let crashHandled = false;
 
+    // === Multiplier logic ===
+    // Map crashPoint (max 10.00) to curvePoints
+    const minCrash = 1.0;
+    const maxCrash = 25.0;
+    const maxX = curvePoints[curvePoints.length - 1].x;
+    const crashX = ((Math.max(minCrash, Math.min(maxCrash, crashPoint)) - minCrash) / (maxCrash - minCrash)) * maxX;
+    const crashIndex = curvePoints.findIndex((pt) => pt.x >= crashX);
+    const actualCrashIndex = crashIndex === -1 ? lastIndex : crashIndex;
+
     // Helper to draw animated propellers
     function drawPropellers(ctx, planeX, planeY, elapsed) {
-      const propellerX = planeX + 75;
+      const propellerX = planeX + 100;
       const propellerY = planeY - 15;
-      const propellerX2 = planeX + 60;
+      const propellerX2 = planeX + 75;
       const propellerY2 = planeY + 7;
 
       const maxRadiusY = 17;
@@ -197,33 +206,53 @@ export default function AviatorAnimation({ crashPoint, onCrash }) {
       }
 
       // Plane/blast logic
-      const imgWidth = 200;
+      const imgWidth = 250;
       const imgHeight = 100;
       let planeX, planeY;
 
       if (isWaiting) {
-        // Plane at origin with up/down animation
         planeX = 150;
         planeY = canvas.height - 50 + Math.sin(waitElapsed * 2) * 10;
       } else {
-        // Plane moves along curve with up/down animation
         const pt = curvePoints[index];
         planeX = pt.x + 150;
         planeY = pt.y - 50 + Math.sin(flyElapsed * 2) * 10;
       }
 
-      // Crash detection: when plane reaches maxX and maxY (last point)
-      if (!isWaiting && index >= lastIndex && !crashed) {
+      // === Crash detection at actualCrashIndex ===
+      if (!isWaiting && index >= actualCrashIndex && !crashed) {
         crashed = true;
         crashTime = performance.now();
       }
 
-      // After reaching the end, show plane for 5 seconds, then show blast for 5 seconds, then call onCrash(true)
-      if (!isWaiting && index >= lastIndex) {
-        const pt = curvePoints[lastIndex];
+      // === Multiplier calculation ===
+      // Map index (0 to actualCrashIndex) to multiplier (0.00x to crashPoint x)
+      let multiplier = 0;
+      if (!isWaiting) {
+        const progress = Math.min(index, actualCrashIndex) / actualCrashIndex;
+        multiplier = progress * crashPoint;
+        if (multiplier > crashPoint) multiplier = crashPoint;
+      }
+
+      // === Draw multiplier ===
+      if (!isWaiting) {
+        ctx.save();
+        ctx.font = "bold 96px Arial";
+        ctx.fillStyle = "#fff";
+        ctx.textAlign = "center"; // Center align
+        ctx.shadowColor = "#FF0066";
+        ctx.shadowBlur = 10;
+        // Place at center of canvas
+        ctx.fillText(`${multiplier.toFixed(2)}x`, canvas.width / 2, 80);
+        ctx.restore();
+      }
+
+      // === Plane/blast drawing logic ===
+      if (!isWaiting && index >= actualCrashIndex) {
+        const pt = curvePoints[actualCrashIndex];
         const now = performance.now();
 
-        // Show plane for 5 seconds after reaching the end (with propellers and up/down effect)
+        // Show plane for 5 seconds after crash
         if (crashTime && now - crashTime < 5000) {
           if (plane.complete) {
             ctx.drawImage(
@@ -268,8 +297,8 @@ export default function AviatorAnimation({ crashPoint, onCrash }) {
       // Draw countdown in waiting phase
       if (isWaiting && countdownValue > 0) {
         ctx.save();
-        ctx.font = "bold 48px Arial";
-        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.font = "bold 96px Arial";
+        ctx.fillStyle = "#FF0066";
         ctx.textAlign = "center";
         ctx.fillText(countdownValue, canvas.width / 2, canvas.height / 2);
         ctx.restore();
@@ -279,7 +308,7 @@ export default function AviatorAnimation({ crashPoint, onCrash }) {
       if (isWaiting) {
         animationId = requestAnimationFrame(draw);
       } else {
-        if (index < lastIndex) index++;
+        if (index < actualCrashIndex) index++;
         animationId = requestAnimationFrame(draw);
       }
     };

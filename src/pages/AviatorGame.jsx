@@ -7,7 +7,7 @@ import SpotlightBackground from "./SpotlightBackground";
 export default function AviatorGame() {
   const [phase, setPhase] = useState("waiting"); // "waiting" | "running" | "crashed"
   const [progress, setProgress] = useState(0);
-  const crashPoint = 10;
+  const crashPoint = 25;
 
   // Waiting phase logic
   useEffect(() => {
@@ -54,14 +54,14 @@ export default function AviatorGame() {
       <div className="absolute inset-0 flex items-center justify-center z-10">
         {phase === "waiting" && (
           <div className="text-center space-y-4 w-full max-w-md px-4">
-            <div className="text-xl font-semibold">
+            <div className="text-2xl font-bold">
               Please wait
               <br />
               beginning of the new round
             </div>
-            <div className="w-full h-2 bg-gray-700 rounded">
+            <div className="w-full h-4 bg-gray-700 rounded">
               <div
-                className="h-2 bg-green-500 rounded"
+                className="h-4 bg-[#FF0066] rounded"
                 style={{
                   width: `${progress}%`,
                   transition: "width 100ms linear",
@@ -81,9 +81,9 @@ export default function AviatorGame() {
         {phase === "crashed" && (
           <div className="text-center space-y-4 w-full max-w-md px-4">
             <div className="text-4xl font-bold text-red-500">
-              Flew away. Try more
+              Crashed!!! Try more
             </div>
-            <div className="w-full h-2 bg-gray-700 rounded">
+            {/* <div className="w-full h-2 bg-gray-700 rounded">
               <div
                 className="h-2 bg-red-500 rounded"
                 style={{
@@ -91,7 +91,7 @@ export default function AviatorGame() {
                   transition: "width 100ms linear",
                 }}
               />
-            </div>
+            </div> */}
           </div>
         )}
       </div>
