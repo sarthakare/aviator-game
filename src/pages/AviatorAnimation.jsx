@@ -1,7 +1,8 @@
 import { useRef, useEffect, useState } from "react";
 
-// Import your plane image (adjust the path as needed)
+// Import your images
 import planeImg from "../assets/plainer.png";
+import blastImg from "../assets/blast.png"; // Make sure this path is correct
 
 export default function AviatorAnimation() {
   const canvasRef = useRef(null);
@@ -22,9 +23,8 @@ export default function AviatorAnimation() {
       const maxY = canvas.height;
 
       for (let i = 0; i <= steps; i++) {
-        const t = i / steps; // t from 0 to 1
+        const t = i / steps;
         const x = t * maxX;
-        // Start from maxY and curve upward toward maxY / 2
         const y = maxY - Math.pow(t, 2) * (maxY / 2);
         points.push({ x, y });
       }
@@ -45,8 +45,10 @@ export default function AviatorAnimation() {
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    const img = new window.Image();
-    img.src = planeImg;
+    const plane = new window.Image();
+    plane.src = planeImg;
+    const blast = new window.Image();
+    blast.src = blastImg;
 
     let index = 0;
     let animationId;
@@ -99,9 +101,9 @@ export default function AviatorAnimation() {
       const planeX = 150;
       const planeY = canvas.height - 50;
 
-      if (img.complete) {
+      if (plane.complete) {
         ctx.drawImage(
-          img,
+          plane,
           planeX - imgWidth / 2,
           planeY - imgHeight / 2,
           imgWidth,
@@ -238,12 +240,23 @@ export default function AviatorAnimation() {
       const imgWidth = 200;
       const imgHeight = 100;
 
-      if (img.complete) {
-        const planeX = pt.x + 150; // Match the offsets you gave in drawImage
+      // If at the last point, show blast image, else show plane
+      if (index >= lastIndex) {
+        if (blast.complete) {
+          ctx.drawImage(
+            blast,
+            pt.x + 100 - imgWidth / 2,
+            pt.y - 50 - imgHeight / 2,
+            imgWidth,
+            imgHeight
+          );
+        }
+      } else if (plane.complete) {
+        const planeX = pt.x + 150;
         const planeY = pt.y - 50;
 
         ctx.drawImage(
-          img,
+          plane,
           planeX - imgWidth / 2,
           planeY - imgHeight / 2,
           imgWidth,
@@ -323,8 +336,8 @@ export default function AviatorAnimation() {
       animationId = requestAnimationFrame(draw);
     };
 
-    img.onload = () => requestAnimationFrame(drawWaiting);
-    if (img.complete) requestAnimationFrame(drawWaiting);
+    plane.onload = () => requestAnimationFrame(drawWaiting);
+    if (plane.complete) requestAnimationFrame(drawWaiting);
 
     return () => {
       cancelAnimationFrame(animationId);
