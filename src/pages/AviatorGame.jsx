@@ -22,7 +22,7 @@ export default function AviatorGame() {
           }
           return prev + 2;
         });
-      }, 1);
+      }, 100);
       return () => clearInterval(interval);
     }
   }, [phase]);
@@ -73,7 +73,6 @@ export default function AviatorGame() {
 
         {phase === "running" && (
           <AviatorAnimation
-            start={true}
             crashPoint={crashPoint}
             onCrash={() => setPhase("crashed")}
           />

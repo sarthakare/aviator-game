@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import planeImg from "../assets/plainer.png";
 import blastImg from "../assets/blast.png";
 
-export default function AviatorAnimation() {
+export default function AviatorAnimation({ crashPoint, onCrash }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const [curvePoints, setCurvePoints] = useState([]);
@@ -54,6 +54,9 @@ export default function AviatorAnimation() {
     let startTime = null;
     let waitStart = null;
     const WAIT_SECONDS = 5;
+    let crashed = false;
+    let crashTime = null;
+    let crashHandled = false;
 
     const draw = (timestamp) => {
       if (!waitStart) waitStart = timestamp;
@@ -103,7 +106,7 @@ export default function AviatorAnimation() {
         ctx.lineTo(curvePoints[i].x, curvePoints[i].y);
       }
       ctx.strokeStyle = "#FF0066";
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 4;
       ctx.stroke();
 
       // Plane/blast logic
@@ -122,6 +125,12 @@ export default function AviatorAnimation() {
         planeY = pt.y - 50 + Math.sin(flyElapsed * 2) * 10;
       }
 
+      // Crash detection: when plane reaches maxX and maxY (last point)
+      if (!isWaiting && index >= lastIndex && !crashed) {
+        crashed = true;
+        crashTime = performance.now();
+      }
+
       if (!isWaiting && index >= lastIndex) {
         // Show blast at end
         if (blast.complete) {
@@ -133,6 +142,14 @@ export default function AviatorAnimation() {
             imgWidth,
             imgHeight
           );
+        }
+        // After 5 seconds, call onCrash(true) once
+        if (crashed && crashTime && !crashHandled) {
+          const sinceCrash = performance.now() - crashTime;
+          if (sinceCrash >= 5000) {
+            crashHandled = true;
+            if (typeof onCrash === "function") onCrash(true);
+          }
         }
       } else if (plane.complete) {
         ctx.drawImage(
@@ -224,7 +241,7 @@ export default function AviatorAnimation() {
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, [curvePoints]);
+  }, [curvePoints, onCrash, crashPoint]);
 
   return (
     <div ref={containerRef} className="w-full h-full relative">
