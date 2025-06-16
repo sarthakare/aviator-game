@@ -132,6 +132,7 @@ export default function AviatorAnimation({ crashPoint, onCrash }) {
       const waitElapsed = (timestamp - waitStart) / 1000;
       const flyElapsed = (timestamp - startTime) / 1000;
       const isWaiting = waitElapsed < WAIT_SECONDS;
+      const countdownValue = Math.max(0, WAIT_SECONDS - Math.floor(waitElapsed));
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -262,6 +263,16 @@ export default function AviatorAnimation({ crashPoint, onCrash }) {
           imgHeight
         );
         drawPropellers(ctx, planeX, planeY, isWaiting ? waitElapsed : flyElapsed);
+      }
+
+      // Draw countdown in waiting phase
+      if (isWaiting && countdownValue > 0) {
+        ctx.save();
+        ctx.font = "bold 48px Arial";
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.textAlign = "center";
+        ctx.fillText(countdownValue, canvas.width / 2, canvas.height / 2);
+        ctx.restore();
       }
 
       // Animate
