@@ -56,7 +56,75 @@ export default function AviatorAnimation({ crashPoint, onCrash }) {
     const WAIT_SECONDS = 5;
     let crashed = false;
     let crashTime = null;
+    let blastTime = null;
     let crashHandled = false;
+
+    // Helper to draw animated propellers
+    function drawPropellers(ctx, planeX, planeY, elapsed) {
+      const propellerX = planeX + 75;
+      const propellerY = planeY - 15;
+      const propellerX2 = planeX + 60;
+      const propellerY2 = planeY + 7;
+
+      const maxRadiusY = 17;
+      const maxRadiusX = 3;
+      const scale = Math.abs(Math.sin(elapsed * Math.PI * 4));
+      const radiusY = maxRadiusY * scale;
+      const radiusX = maxRadiusX * scale;
+
+      ctx.fillStyle = "#FF0066";
+
+      // Top ellipse
+      ctx.beginPath();
+      ctx.ellipse(
+        propellerX,
+        propellerY - radiusY * 1.5,
+        radiusX,
+        radiusY,
+        0,
+        0,
+        2 * Math.PI
+      );
+      ctx.fill();
+
+      // Bottom ellipse
+      ctx.beginPath();
+      ctx.ellipse(
+        propellerX,
+        propellerY + radiusY * 2,
+        radiusX,
+        radiusY,
+        0,
+        0,
+        2 * Math.PI
+      );
+      ctx.fill();
+
+      // Second mirrored propeller
+      ctx.beginPath();
+      ctx.ellipse(
+        propellerX2,
+        propellerY2 - radiusY * 1.5,
+        radiusX,
+        radiusY,
+        0,
+        0,
+        2 * Math.PI
+      );
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.ellipse(
+        propellerX2,
+        propellerY2 + radiusY * 1.5,
+        radiusX,
+        radiusY,
+        0,
+        0,
+        2 * Math.PI
+      );
+      ctx.fill();
+    }
 
     const draw = (timestamp) => {
       if (!waitStart) waitStart = timestamp;
@@ -131,25 +199,41 @@ export default function AviatorAnimation({ crashPoint, onCrash }) {
         crashTime = performance.now();
       }
 
+      // After reaching the end, show plane for 5 seconds, then show blast for 5 seconds, then call onCrash(true)
       if (!isWaiting && index >= lastIndex) {
-        // Show blast at end
-        if (blast.complete) {
-          const pt = curvePoints[lastIndex];
-          ctx.drawImage(
-            blast,
-            pt.x + 100 - imgWidth / 2,
-            pt.y - 50 - imgHeight / 2,
-            imgWidth,
-            imgHeight
-          );
-        }
-        // After 5 seconds, call onCrash(true) once
-        if (crashed && crashTime && !crashHandled) {
-          const sinceCrash = performance.now() - crashTime;
-          if (sinceCrash >= 5000) {
-            crashHandled = true;
-            if (typeof onCrash === "function") onCrash(true);
+        const pt = curvePoints[lastIndex];
+        const now = performance.now();
+
+        // Show plane for 5 seconds after reaching the end (with propellers and up/down effect)
+        if (crashTime && now - crashTime < 5000) {
+          if (plane.complete) {
+            ctx.drawImage(
+              plane,
+              pt.x + 150 - imgWidth / 2,
+              pt.y - 50 - imgHeight / 2 + Math.sin((now - crashTime) / 500 * 2) * 10,
+              imgWidth,
+              imgHeight
+            );
+            drawPropellers(ctx, pt.x + 150, pt.y - 50 + Math.sin((now - crashTime) / 500 * 2) * 10, (now - crashTime) / 1000);
           }
+        }
+        // Then show blast for 5 seconds
+        else if (crashTime && now - crashTime < 10000) {
+          if (!blastTime) blastTime = now;
+          if (blast.complete) {
+            ctx.drawImage(
+              blast,
+              pt.x + 100 - imgWidth / 2,
+              pt.y - 50 - imgHeight / 2,
+              imgWidth,
+              imgHeight
+            );
+          }
+        }
+        // After blast, call onCrash(true) once
+        else if (!crashHandled) {
+          crashHandled = true;
+          if (typeof onCrash === "function") onCrash(true);
         }
       } else if (plane.complete) {
         ctx.drawImage(
@@ -159,71 +243,7 @@ export default function AviatorAnimation({ crashPoint, onCrash }) {
           imgWidth,
           imgHeight
         );
-
-        // === Animated propellers ===
-        const propellerX = planeX + 75;
-        const propellerY = planeY - 15;
-        const propellerX2 = planeX + 60;
-        const propellerY2 = planeY + 7;
-
-        const maxRadiusY = 17;
-        const maxRadiusX = 3;
-        const scale = Math.abs(Math.sin((isWaiting ? waitElapsed : flyElapsed) * Math.PI * 4));
-        const radiusY = maxRadiusY * scale;
-        const radiusX = maxRadiusX * scale;
-
-        ctx.fillStyle = "#FF0066";
-
-        // Top ellipse
-        ctx.beginPath();
-        ctx.ellipse(
-          propellerX,
-          propellerY - radiusY * 1.5,
-          radiusX,
-          radiusY,
-          0,
-          0,
-          2 * Math.PI
-        );
-        ctx.fill();
-
-        // Bottom ellipse
-        ctx.beginPath();
-        ctx.ellipse(
-          propellerX,
-          propellerY + radiusY * 2,
-          radiusX,
-          radiusY,
-          0,
-          0,
-          2 * Math.PI
-        );
-        ctx.fill();
-
-        // Second mirrored propeller
-        ctx.beginPath();
-        ctx.ellipse(
-          propellerX2,
-          propellerY2 - radiusY * 1.5,
-          radiusX,
-          radiusY,
-          0,
-          0,
-          2 * Math.PI
-        );
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.ellipse(
-          propellerX2,
-          propellerY2 + radiusY * 1.5,
-          radiusX,
-          radiusY,
-          0,
-          0,
-          2 * Math.PI
-        );
-        ctx.fill();
+        drawPropellers(ctx, planeX, planeY, isWaiting ? waitElapsed : flyElapsed);
       }
 
       // Animate
